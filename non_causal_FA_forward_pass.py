@@ -48,7 +48,7 @@ def flash_attention_fwd_kernel(
     l = tl.zeros((BLOCK_SIZE_M,),
                     dtype=tl.float32)
     
-    acc = tl.zeros((BLOCK_SIZE_M,D),
+    acc = tl.zeros((BLOCK_SIZE_M,BLOCK_SIZE_D),
                    dtype=tl.float32)
     
     for kv_start in range(0,N,BLOCK_SIZE_N):
@@ -93,13 +93,13 @@ def flash_attention_fwd_kernel(
 
         m = m_new
 
-        output = (acc / l[:,None])
+    output = (acc / l[:,None])
 
-        o_ptrs = O_ptr + offs_m[:,None] * stride_on + offs_d[None,:] * stride_od
+    o_ptrs = O_ptr + offs_m[:,None] * stride_on + offs_d[None,:] * stride_od
 
-        o_mask = ((offs_m[:,None] < N) & (offs_d[None,:] < D))
+    o_mask = ((offs_m[:,None] < N) & (offs_d[None,:] < D))
 
-        tl.store(o_ptrs,output,mask=o_mask)
+    tl.store(o_ptrs,output,mask=o_mask)
 
 
 def flash_attention(q,k,v):
