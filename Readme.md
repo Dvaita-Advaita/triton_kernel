@@ -34,3 +34,23 @@ their difference from `A @ B`.
 |---|---|---|---|---|---|
 | … | … | … | … | … | … |
 
+## Run
+
+Needs an NVIDIA GPU, PyTorch and Triton.
+
+```bash
+pip install torch triton
+python FLASH_ATTENTION.py      # correctness checks, then forward/backward timings vs SDPA for N = 128…2048
+```
+
+Every other file is a standalone script, e.g. `python block_mat_mul.py` or
+`python causal_MultiHead_FA_forward_pass.py`. Each prints its difference from the PyTorch result.
+
+## What I learned
+- Why attention is memory-bound, not compute-bound, when the N×N score matrix is written to HBM, and how tiling plus online softmax keeps everything in SRAM.
+- Why the backward pass recomputes attention probabilities from the saved log-sum-exp instead of storing them.
+- How tile order (grouping) changes L2 hit rate in matmul, and what `num_warps` and `num_stages` trade off.
+
+## References
+- Dao et al., *FlashAttention* (2022) and *FlashAttention-2* (2023)
+- Triton tutorials: vector add, matrix multiplication, fused attention
